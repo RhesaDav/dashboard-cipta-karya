@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFormContext } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -33,15 +33,14 @@ export default function BasicInfoStep() {
   const form = useFormContext();
 
   const KEGIATAN_LIST = [
-    "Pengawasan Penyelenggaraan Jalan Kewenangan Provinsi",
-    "Pemantauan dan Evaluasi Penyelenggaraan Jalan/Jembatan",
-    "Rehabilitasi Jalan",
-    "Rekonstruksi Jalan",
-    "Pembangunan Jembatan",
-    "Pemeliharaan Berkala Jalan",
-    "Penyusunan Rencana, Kebijakan, Strategi dan Teknis Pengembangan Jaringan Jalan serta Perencanaan Teknis Penyelenggaraan Jalan dan Jembatan",
-    "Pembangunan Jalan",
-    "Survey Kondisi Jalan/Jembatan",
+    "Pembangunan Sistem Penyediaan Air Minum (SPAM) Lintas Kabupaten/Kota",
+    "Operasi dan Pemeliharaan Sistem Penyediaan Air Minum (SPAM)",
+    "Pembangunan Sistem Penyediaan Air Minum (SPAM) Bukan Jaringan Perpipaan di Kawasan Strategis Provinsi",
+    "Pembangunan Sistem Penyediaan Air Minum (SPAM) Jaringan Perpipaan di Kawasan Strategis Provinsi",
+    "Pembangunan rumah sehat yang dilengkapi dengan prasarana dan sarana utilitas umum, terutama bagi OAP di daerah terisolasi, terpencil, dan terluar",
+    "Pembangunan Sistem Drainase Perkotaan",
+    "Pembangunan, Pemanfaatan, Pelestariaan dan Pembongkaran Bangunan Gedung untuk Kepentingan Strategis Daerah Provinsi",
+    "Pembangunan Sistem Pengelolaan Air Limbah Domestik (SPALD) Terpusat",
   ] as const;
 
   return (
