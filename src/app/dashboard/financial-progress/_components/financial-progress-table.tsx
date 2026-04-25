@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { DataTable } from "@/components/data-table";
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
@@ -45,6 +45,7 @@ function FinancialProgressTable() {
         limit: pageSizeParam,
         search: searchQuery,
       }),
+    refetchInterval: 10000,
   });
 
   const columns: ColumnDef<ContractWithFinancialProgress>[] = [

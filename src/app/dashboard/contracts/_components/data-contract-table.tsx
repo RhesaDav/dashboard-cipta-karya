@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { DataTable } from "@/components/data-table";
 import { Button } from "@/components/ui/button";
 import { Column, ColumnDef } from "@tanstack/react-table";
@@ -74,6 +74,7 @@ function DataContractTable() {
       }),
     placeholderData: keepPreviousData,
     refetchOnMount: false,
+    refetchInterval: 10000,
   });
 
   const { user } = useCurrentUser();

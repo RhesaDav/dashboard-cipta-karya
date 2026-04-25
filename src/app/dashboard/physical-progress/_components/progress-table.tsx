@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { DataTable } from "@/components/data-table";
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
@@ -49,7 +49,7 @@ function ProgressTable() {
         limit: pageSizeParam,
         search: searchQuery,
       }),
-    // placeholderData: keepPreviousData,
+    refetchInterval: 10000,
   });
 
   const columns: ColumnDef<

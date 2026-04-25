@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { format } from "date-fns";
 import { id as indonesianLocale } from 'date-fns/locale';
 import { useEffect, useState } from "react";
@@ -41,6 +41,7 @@ export default function DashboardPage() {
     refetchOnWindowFocus: true,
     refetchOnMount: true,
     refetchOnReconnect: true,
+    refetchInterval: 10000,
   });
 
   useEffect(() => {
