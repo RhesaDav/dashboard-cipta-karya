@@ -55,7 +55,7 @@ export const createUser = async (formData: FormData) => {
       headers: await headers(),
     });
 
-    const newUser = response?.user || response;
+    const newUser = response;
 
     revalidatePath("/dashboard/user-management", "page");
 
@@ -220,7 +220,7 @@ export const updateUser = async (formData: FormData) => {
       headers: await headers(),
     });
 
-    const updatedUser = response?.user || response;
+    const updatedUser = response;
 
     if (validatedData.password) {
       if (!api || !api.setUserPassword) {

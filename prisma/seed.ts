@@ -6,13 +6,16 @@ import { auth } from '../src/lib/auth';
 
 import { PrismaPg } from "@prisma/adapter-pg"
 
+import { Pool } from "pg";
+
 const databaseUrl = process.env.DATABASE_URL;
 
 if (!databaseUrl) {
   throw new Error("DATABASE_URL is not defined in .env file");
 }
 
-const adapter = new PrismaPg(databaseUrl)
+const pool = new Pool({ connectionString: databaseUrl });
+const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 function generateWeeks(startDate: Date, durationDays: number) {
@@ -81,7 +84,7 @@ async function main() {
     { name: 'Admin User', email: 'admin@binamarga.com', role: 'ADMIN' },
     { name: 'Superadmin User', email: 'superadmin@binamarga.com', role: 'SUPERADMIN' },
     { name: 'Consultant User', email: 'consultant@binamarga.com', role: 'CONSULTANT' },
-  ];
+  ] as const;
 
   for (const u of seedUsers) {
     try {
