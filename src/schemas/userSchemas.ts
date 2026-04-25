@@ -17,12 +17,12 @@ export const CreateUserSchema = z.object({
 });
 
 export const UpdateUserSchema = CreateUserSchema.extend({
-  id: z.string().uuid(),
+  id: z.string().min(1, "ID wajib diisi"),
   password: z.string().optional(),
 });
 
 export const UserIdSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string().min(1, "ID wajib diisi"),
 });
 
 export type CreateUserType = z.infer<typeof CreateUserSchema>;

@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 
 /**
  * Mendapatkan user yang sedang login berdasarkan session Better Auth.
- * @returns {Promise<object|null>} User object atau null jika tidak ada session.
+ * @returns {Promise<any|null>} User object atau null jika tidak ada session.
  */
 export async function getCurrentUser() {
   const reqHeaders = await headers();
@@ -18,11 +18,9 @@ export async function getCurrentUser() {
       return null;
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-    });
-
-    return user;
+    // Better Auth session already contains the user object with additional fields (like role)
+    // We return it directly to avoid redundant Prisma queries.
+    return session.user;
   } catch (error) {
     console.error("Failed to get current user:", error);
     return null;

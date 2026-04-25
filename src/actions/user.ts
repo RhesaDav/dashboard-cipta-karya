@@ -39,47 +39,38 @@ export const createUser = async (formData: FormData) => {
     console.log("Creating user...", validatedData.email);
     
     const api = auth.api;
-    let newUser;
-    
-    // Use Better Auth's API to ensure consistent password hashing, account linkage, and event hooks are triggered.
-    if (api && api.createUser) {
-      newUser = await api.createUser({
-        body: {
-          email: validatedData.email,
-          name: validatedData.name,
-          password: validatedData.password,
-          role: validatedData.role,
-        },
-        headers: await headers(),
-      });
-      // The API return type contains the user object
-      newUser = newUser?.user || newUser;
-    } else {
-      // Fallback
-      newUser = await prisma.user.create({
-        data: {
-          email: validatedData.email,
-          name: validatedData.name,
-          role: validatedData.role,
-          accounts: {
-            create: {
-              id: crypto.randomUUID(),
-              accountId: validatedData.email,
-              providerId: "credential",
-              password: await bcrypt.hash(validatedData.password, 10),
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            },
-          },
-        },
-      });
+    if (!api || !api.createUser) {
+      throw new Error("Better Auth API (createUser) is not available. Ensure the admin plugin is enabled.");
     }
+
+    console.log("Creating user via Better Auth API...", validatedData.email);
+    
+    const response = await api.createUser({
+      body: {
+        email: validatedData.email,
+        name: validatedData.name,
+        password: validatedData.password,
+        role: validatedData.role,
+      },
+      headers: await headers(),
+    });
+
+    const newUser = response?.user || response;
 
     revalidatePath("/dashboard/user-management", "page");
 
     return { success: true, user: newUser };
   } catch (error: any) {
     console.error("Error in createUser:", error);
+
+    // Better Auth API Error Handling
+    if (error.status === 'UNAUTHORIZED' || error.statusCode === 401 || error.status === 'FORBIDDEN' || error.statusCode === 403) {
+      return {
+        success: false,
+        error: "Anda tidak memiliki izin (Superadmin) untuk melakukan tindakan ini."
+      };
+    }
+
     try {
       handlePrismaError(error);
     } catch (e: any) {
@@ -210,28 +201,26 @@ export const updateUser = async (formData: FormData) => {
       role: validatedData.role,
     };
 
-    let updatedUser;
     const api = auth.api;
-    
-    if (api && api.adminUpdateUser) {
-      updatedUser = await api.adminUpdateUser({
-        body: {
-          userId: validatedData.id,
-          data: {
-            name: validatedData.name,
-            email: validatedData.email,
-            role: validatedData.role,
-          }
-        },
-        headers: await headers(),
-      });
-      // The Better Auth API directly returns the user.
-    } else {
-      updatedUser = await prisma.user.update({
-        where: { id: validatedData.id },
-        data: updateData,
-      });
+    if (!api || !api.adminUpdateUser) {
+      throw new Error("Better Auth API (adminUpdateUser) is not available. Ensure the admin plugin is enabled.");
     }
+
+    console.log("Updating user via Better Auth API...", validatedData.id);
+    
+    const response = await api.adminUpdateUser({
+      body: {
+        userId: validatedData.id,
+        data: {
+          name: validatedData.name,
+          email: validatedData.email,
+          role: validatedData.role,
+        }
+      },
+      headers: await headers(),
+    });
+
+    const updatedUser = response?.user || response;
 
     if (validatedData.password) {
       if (!api || !api.setUserPassword) {
@@ -279,25 +268,33 @@ export const deleteUser = async (id: string) => {
 
     // Ensure we are calling the internal Better Auth API to cleanly delete the user and clear sessions.
     const api = auth.api;
-    if (api && api.removeUser) {
-      await api.removeUser({
-        body: {
-          userId: validatedId.id,
-        },
-        headers: await headers(),
-      });
-    } else {
-      // Fallback if Better Auth admin plugin is somehow unavailable
-      await prisma.user.delete({
-        where: { id: validatedId.id },
-      });
+    if (!api || !api.removeUser) {
+      throw new Error("Better Auth API (removeUser) is not available. Ensure the admin plugin is enabled.");
     }
+
+    console.log("Deleting user via Better Auth API...", validatedId.id);
+
+    await api.removeUser({
+      body: {
+        userId: validatedId.id,
+      },
+      headers: await headers(),
+    });
 
     revalidatePath("/dashboard/user-management", "page");
 
     return { success: true, message: "User berhasil dihapus" };
   } catch (error: any) {
     console.error("Error in deleteUser:", error);
+
+    // Better Auth API Error Handling
+    if (error.status === 'UNAUTHORIZED' || error.statusCode === 401 || error.status === 'FORBIDDEN' || error.statusCode === 403) {
+      return {
+        success: false,
+        error: "Anda tidak memiliki izin (Superadmin) untuk melakukan tindakan ini."
+      };
+    }
+
     try {
       handlePrismaError(error);
     } catch (e: any) {

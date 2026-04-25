@@ -12,7 +12,7 @@ if (!databaseUrl) {
   throw new Error("DATABASE_URL is not defined in .env file");
 }
 
-const adapter = new PrismaPg(databaseUrl, { schema: "optimization" })
+const adapter = new PrismaPg(databaseUrl)
 const prisma = new PrismaClient({ adapter });
 
 function generateWeeks(startDate: Date, durationDays: number) {
@@ -85,7 +85,7 @@ async function main() {
 
   for (const u of seedUsers) {
     try {
-      await auth.api.signUpEmail({
+      await auth.api.createUser({
         body: {
           email: u.email,
           password: 'password123',
