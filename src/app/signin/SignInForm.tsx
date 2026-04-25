@@ -1,0 +1,289 @@
+"use client";
+
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useRouter } from "next/navigation";
+import { signIn } from "@/lib/auth-client";
+import { resolveIdentifierAction } from "@/actions/auth";
+import { toast } from "sonner";
+import { Loader, Eye, EyeOff, Building2, CalendarDays } from "lucide-react";
+import Link from "next/link";
+
+const currentYear = new Date().getFullYear();
+const yearOptions = [
+  currentYear - 4,
+  currentYear - 3,
+  currentYear - 2,
+  currentYear - 1,
+  currentYear,
+  currentYear + 1,
+].sort((a, b) => b - a);
+
+const SignInSchema = z.object({
+  budgetYear: z.string().min(1, "Tahun anggaran wajib dipilih"),
+  emailOrName: z
+    .string()
+    .min(1, "Email atau Nama wajib diisi")
+    .refine(
+      (value) =>
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) || /^[a-zA-Z0-9_]{3,}$/.test(value),
+      {
+        message: "Harus berupa email yang valid atau username minimal 3 karakter (huruf, angka, atau _)",
+      }
+    ),
+  password: z.string().min(6, "Password minimal 6 karakter"),
+});
+
+
+type SignInFormData = z.infer<typeof SignInSchema>;
+
+function SignInForm() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const form = useForm<SignInFormData>({
+    resolver: zodResolver(SignInSchema),
+    defaultValues: {
+      budgetYear: currentYear.toString(),
+      emailOrName: "",
+      password: "",
+    },
+    mode: "onBlur"
+  });
+
+  const onSubmit = async (values: SignInFormData) => {
+    setLoading(true);
+    setErrorMessage(null);
+
+    try {
+      // Step 1: Resolve identifier (email or name) to a valid email
+      const resolution = await resolveIdentifierAction(values.emailOrName);
+
+      if (!resolution.success || !resolution.email) {
+        setErrorMessage(resolution.error || "Email/username tidak terdaftar");
+        toast.error("Login gagal", {
+          description: resolution.error || "Email/username tidak terdaftar",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Step 2: Use the resolved email to sign in
+      const { data, error } = await signIn.email({
+        email: resolution.email,
+        password: values.password,
+      });
+
+      if (!error) {
+        toast.success("Login berhasil!", {
+          description: "Selamat datang di Sistem Cipta Karya",
+          duration: 3000,
+        });
+
+        // Simpan budgetYear di cookie sebagai fallback tambahan untuk server actions/API lain
+        document.cookie = `budgetYear=${values.budgetYear}; path=/`;
+
+        const role = data?.user?.role || "USER";
+        if (role === "CONSULTANT" || role === "ADMIN") {
+          router.push("/dashboard/contracts");
+        } else {
+          router.push("/dashboard/home");
+        }
+      } else {
+        setErrorMessage(error.message || "Email/username tidak terdaftar atau password salah");
+        toast.error("Login gagal", {
+          description: error.message || "Periksa kembali email dan password Anda",
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      console.error("Login system error:", error);
+      setErrorMessage("Terjadi kesalahan sistem. Silakan coba lagi.");
+      toast.error("Kesalahan Sistem", {
+        description: "Mohon coba beberapa saat lagi",
+        duration: 3000,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-indigo-50 to-gray-100 flex items-center justify-center p-4 selection:bg-blue-500 selection:text-white">
+      <div className="w-full max-w-md bg-white rounded-xl shadow-2xl overflow-hidden transform transition-all hover:scale-[1.01] duration-300">
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-center">
+          <div className="flex justify-center mb-3">
+            <Building2 className="h-12 w-12 text-white" />
+          </div>
+          <h1 className="text-3xl font-bold text-white tracking-tight">
+            E-MONITORING
+          </h1>{" "}
+          <p className="text-blue-100 mt-1.5 text-sm">
+            ELEKTRONIK MONITORING BIDANG CIPTA KERJA
+          </p>{" "}
+        </div>
+
+        <div className="p-8">
+          <h2 className="text-2xl font-semibold text-gray-800 text-center mb-7">
+            Masuk ke Akun Anda
+          </h2>
+
+          {errorMessage && (
+            <div className="mb-5 p-3.5 bg-red-50 text-red-700 border border-red-300 rounded-lg text-sm shadow-sm">
+              {errorMessage}
+            </div>
+          )}
+
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="budgetYear"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-700 font-semibold text-sm">
+                      Tahun Anggaran
+                    </FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="h-12 w-full border-gray-300 hover:border-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 rounded-lg shadow-sm text-base transition-colors duration-150">
+                          <div className="flex items-center">
+                            <CalendarDays className="mr-2.5 h-5 w-5 text-gray-500" />
+                            <SelectValue placeholder="Pilih Tahun Anggaran" />
+                          </div>
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="bg-white border-gray-300 rounded-lg shadow-xl py-1">
+                        {yearOptions.map((year) => (
+                          <SelectItem
+                            key={year}
+                            value={year.toString()}
+                            className="hover:bg-blue-50 text-gray-700 cursor-pointer py-2.5 px-4 text-sm transition-colors duration-100"
+                          >
+                            {year}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage className="text-xs text-red-600 pt-1" />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="emailOrName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-700 font-semibold text-sm">
+                      Email atau Nama Pengguna
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="text"
+                        placeholder="contoh@email.com atau nama.pengguna"
+                        className="h-12 w-full border-gray-300 hover:border-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 rounded-lg shadow-sm px-4 text-base transition-colors duration-150"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage className="text-xs text-red-600 pt-1" />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="flex justify-between items-center">
+                      <FormLabel className="text-gray-700 font-semibold text-sm">
+                        Password
+                      </FormLabel>
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="text-xs text-blue-600 hover:text-blue-800 font-semibold focus:outline-none focus:underline"
+                      >
+                        {showPassword ? (
+                          <span className="flex items-center gap-1.5">
+                            <EyeOff className="w-4 h-4" /> Sembunyikan
+                          </span>
+                        ) : (
+                          <span className="flex items-center gap-1.5">
+                            <Eye className="w-4 h-4" /> Tampilkan
+                          </span>
+                        )}
+                      </button>
+                    </div>
+                    <FormControl>
+                      <div className="relative">
+                        <Input
+                          type={showPassword ? "text" : "password"}
+                          placeholder="••••••••"
+                          className="h-12 w-full pr-10 border-gray-300 hover:border-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 rounded-lg shadow-sm px-4 text-base transition-colors duration-150"
+                          {...field}
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage className="text-xs text-red-600 pt-1" />
+                  </FormItem>
+                )}
+              />
+              <div className="pt-3">
+                <Button
+                  type="submit"
+                  className="w-full h-12 bg-blue-600 hover:bg-blue-700 focus:bg-blue-700 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75 transition-all duration-150 ease-in-out transform active:scale-[0.98]"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <Loader className="w-5 h-5 animate-spin mr-2.5" />
+                  ) : null}
+                  {loading ? "Memproses..." : "Masuk"}
+                </Button>
+              </div>
+              <div className="text-center text-sm text-gray-600 mt-5">
+                <Link
+                  href="/forgot-password"
+                  className="text-blue-600 hover:text-blue-700 hover:underline font-medium"
+                >
+                  Lupa password?
+                </Link>
+              </div>
+            </form>
+          </Form>
+        </div>
+
+        <div className="bg-gray-50 px-6 py-5 text-center border-t border-gray-200">
+          <p className="text-xs text-gray-500">
+            © {new Date().getFullYear()} Cipta Karya. Hak cipta dilindungi.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default SignInForm;

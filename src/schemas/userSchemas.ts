@@ -1,0 +1,30 @@
+import { Role } from "@/generated/prisma/enums";
+import { z } from "zod";
+
+export const UserRoleEnum = z.enum(["ADMIN", "USER"]);
+
+export const CreateUserSchema = z.object({
+  email: z.string().email("Email tidak valid"),
+  password: z.string().min(6, "Password minimal 6 karakter"),
+  name: z
+    .string()
+    .min(3, "Username minimal 3 karakter")
+    .regex(
+      /^[a-zA-Z0-9_]+$/,
+      "Username hanya boleh mengandung huruf, angka, dan underscore"
+    ),
+  role: z.enum(["ADMIN", "SUPERADMIN", "CONSULTANT"]),
+});
+
+export const UpdateUserSchema = CreateUserSchema.extend({
+  id: z.string().uuid(),
+  password: z.string().optional(),
+});
+
+export const UserIdSchema = z.object({
+  id: z.string().uuid(),
+});
+
+export type CreateUserType = z.infer<typeof CreateUserSchema>;
+export type UpdateUserType = z.infer<typeof UpdateUserSchema>;
+export type UserIdType = z.infer<typeof UserIdSchema>;
