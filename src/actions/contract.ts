@@ -22,7 +22,7 @@ import { IdSchema } from "@/schemas/id.schema";
 import { format } from "date-fns";
 import { getCurrentUser } from "./auth";
 import { cookies } from "next/headers";
-import { deletePaket, getPaketById, insertPaket, pgClient, updatePaket } from "@/lib/pgClient";
+
 
 interface ProgressItem {
   week: number;
@@ -257,37 +257,7 @@ export async function createContract(data: CompleteContractCreate) {
       return contract;
     });
 
-    // Temporarily disabled secondary database sync
-    /*
-    await insertPaket({
-      id: result.id,
-      tipePaket: "Fisik",
-      kabupatenKota: validatedData.location?.kota || undefined,
-      distrik: validatedData.location?.distrik || undefined,
-      kampung: validatedData.location?.kampung || undefined,
-      titikKoordinat: validatedData.location?.koordinatAwal || undefined,
-      pejabatPembuatKomitmen: validatedData.ppk || undefined,
-      nipPejabatPembuatKomitmen: validatedData.nipPPK || undefined,
-      nomorKontrak: validatedData.nomorKontrak || undefined,
-      penyedia: validatedData.namaPenyedia || undefined,
-      nilaiKontrak: String(validatedData.nilaiKontrak) || undefined,
-      tanggalKontrak: validatedData.tanggalKontrak
-        ? format(validatedData.tanggalKontrak, "yyyy-MM-dd")
-        : undefined,
-      volumeKontrak: validatedData.volumeKontrak || undefined,
-      satuanKontrak: validatedData.satuanKontrak || undefined,
-      korwaslap: validatedData.korwaslap || undefined,
-      nipKorwaslap: validatedData.nipKorwaslap || undefined,
-      pengawasLapangan: validatedData.pengawasLapangan || undefined,
-      nipPengawas: validatedData.nipPengawasLapangan || undefined,
-      hasilProdukAkhir: validatedData.hasilProdukAkhir || undefined,
-      tautanMediaProgresAwal: validatedData.dokumentasiAwal || undefined,
-      tautanMediaProgresTengah: validatedData.dokumentasiTengah || undefined,
-      tautanMediaProgresAkhir: validatedData.dokumentasiAkhir || undefined,
-      bidang: "Cipta Karya",
-      title: validatedData.namaPaket,
-    });
-    */
+
 
     revalidatePath("/dashboard/contracts", "page");
     return { success: true, data: result };
@@ -821,36 +791,7 @@ export async function updateContract(id: string, updateData: any) {
 
     console.log(result.id)
 
-    /*
-    await updatePaket({
-      id: result.id,
-      tipePaket: "Fisik",
-      kabupatenKota: updateData.location?.kota,
-      distrik: updateData.location?.distrik,
-      kampung: updateData.location?.kampung,
-      titikKoordinat: updateData.location?.koordinatAwal,
-      pejabatPembuatKomitmen: updateData.ppk,
-      nipPejabatPembuatKomitmen: updateData.nipPPK,
-      nomorKontrak: updateData.nomorKontrak,
-      penyedia: updateData.namaPenyedia,
-      nilaiKontrak: String(updateData.nilaiKontrak),
-      tanggalKontrak: updateData.tanggalKontrak 
-        ? format(updateData.tanggalKontrak, "yyyy-MM-dd")
-        : undefined,
-      volumeKontrak: updateData.volumeKontrak,
-      satuanKontrak: updateData.satuanKontrak,
-      korwaslap: updateData.korwaslap,
-      nipKorwaslap: updateData.nipKorwaslap,
-      pengawasLapangan: updateData.pengawasLapangan,
-      nipPengawas: updateData.nipPengawasLapangan,
-      hasilProdukAkhir: updateData.hasilProdukAkhir,
-      tautanMediaProgresAwal: updateData.dokumentasiAwal,
-      tautanMediaProgresTengah: updateData.dokumentasiTengah,
-      tautanMediaProgresAkhir: updateData.dokumentasiAkhir,
-      bidang: "Cipta Karya",
-      title: updateData.namaPaket,
-    })
-    */
+
 
     revalidatePath("/dashboard/contracts", "page");
 
@@ -899,8 +840,7 @@ export async function deleteContract(id: string) {
       return deletedContract;
     });
 
-    // Temporarily disabled secondary database sync
-    // await deletePaket(id);
+
 
     revalidatePath("/dashboard/contracts", "page");
 

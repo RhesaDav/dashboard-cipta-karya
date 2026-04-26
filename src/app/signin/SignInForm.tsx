@@ -140,7 +140,7 @@ function SignInForm() {
             E-MONITORING
           </h1>{" "}
           <p className="text-blue-100 mt-1.5 text-sm">
-            ELEKTRONIK MONITORING BIDANG CIPTA KERJA
+            ELEKTRONIK MONITORING BIDANG CIPTA KARYA
           </p>{" "}
         </div>
 

@@ -1,5 +1,5 @@
 "use server"
-import { updatePaket } from "@/lib/pgClient";
+
 import { prisma } from "@/lib/prisma";
 import { handlePrismaError, validateSchema } from "@/lib/utils";
 import {
@@ -50,13 +50,7 @@ export const upsertFinancialProgress = async (
       });
     }
 
-    // Temporarily disabled secondary database sync
-    /*
-    await updatePaket({
-      id: existingContract.id,
-      progresKeuangan: String(validatedData.totalPayment)
-    })
-    */
+
 
     revalidatePath(`/contracts/${validatedData.contractId}`);
 
